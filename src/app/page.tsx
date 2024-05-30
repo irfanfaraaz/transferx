@@ -1,113 +1,120 @@
-import Image from "next/image";
+"use client";
 
+import { useState } from "react";
+import { Importer, ImporterField } from "react-csv-importer";
+import { ethers, Contract } from "ethers";
+import transferXJson from "./transferX.json";
+import Welcome from "@/components/Welcome";
+
+const blockchainExplorerUrls = {
+    "11155111": "https://sepolia.etherscan.io/tx",
+};
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    const [payments, setPayments] = useState(undefined as any[] | undefined);
+    const [sending, setSending] = useState(false);
+    const [blockchainExplorer, setBlockchainExplorer] = useState(undefined);
+    const [error, setError] = useState(false);
+    const [transaction, setTransaction] = useState("");
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+    const sendPayments = async () => {
+        // Connect to metamask
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = await provider.getSigner();
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+        const { chainId } = await provider.getNetwork();
+        setBlockchainExplorer(blockchainExplorerUrls[chainId.toString()]);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+        setSending(true);
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+        const { recipients, amounts, total } = payments?.reduce(
+            (acc, val) => {
+                acc.recipients.push(val.recipient);
+                acc.amounts.push(val.amount);
+                acc.total += parseInt(val.amount);
+                return acc;
+            },
+            {
+                recipients: [],
+                amounts: [],
+                total: 0,
+            }
+        );
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+        // send payments
+
+        const transferX = new Contract(
+            transferXJson.address,
+            transferXJson.abi,
+            signer
+        );
+
+        try {
+            const tx = await transferX.send(recipients, amounts, {
+                value: total,
+            });
+            const txReceipt = await tx.wait();
+            setTransaction(txReceipt.hash);
+        } catch (error) {
+            console.log(error);
+            setError(true);
+        }
+    };
+
+    return (
+        <>
+            <nav className="w-full flex md:justify-start justify-start items-start px-4 pt-4">
+                <div className="font-bold text-3xl sm:text-5xl bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent hover:from-indigo-600 hover:to-cyan-300 hover:cursor-pointer">
+                    TransferX
+                </div>
+            </nav>
+            <div className="container  flex justify-center items-center">
+                <div className="flex flex-col items-center justify-center">
+                    <Welcome />
+                    <div className="mt-2">
+                        <Importer
+                            dataHandler={(rows) => setPayments(rows)}
+                            defaultNoHeader={false}
+                            restartable={false}
+                        >
+                            <ImporterField name="recipient" label="recipient" />
+                            <ImporterField name="amount" label="amount" />
+                            <ImporterField
+                                name="currency"
+                                label="currency"
+                                optional
+                            />
+                        </Importer>
+                    </div>
+                    <button
+                        className="mt-5 text-white w-full  border-[1px] p-2 border-[#3d4f7c] rounded-full hover:cursor-pointer"
+                        onClick={sendPayments}
+                        disabled={sending || typeof payments === "undefined"}
+                    >
+                        Send Payment
+                    </button>
+                </div>
+                {sending && (
+                    <div className="mt-4">
+                        Payments Processing... Please wait
+                    </div>
+                )}
+                {transaction && (
+                    <div className="mt-4">
+                        Congrats!!! The payments were sent at{" "}
+                        <a
+                            href={`${blockchainExplorer}/${transaction}`}
+                            target="_blank"
+                        >{`${transaction.substr(0, 20)}...`}</a>
+                    </div>
+                )}
+                {error && (
+                    <div className="mt-4">
+                        Oops... There was a problem. Your payments were not
+                        sent. Please try again later.
+                    </div>
+                )}
+            </div>
+        </>
+    );
 }

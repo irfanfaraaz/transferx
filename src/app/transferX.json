@@ -1,0 +1,28 @@
+{
+    "address": "0xd3f9dd13ab7da20542e814e1d932eb1278a0c472",
+    "abi": [
+        {
+            "inputs": [],
+            "name": "TotalRecipentsAndAmountsLengthMustBeSame",
+            "type": "error"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address payable[]",
+                    "name": "recipents",
+                    "type": "address[]"
+                },
+                {
+                    "internalType": "uint256[]",
+                    "name": "amounts",
+                    "type": "uint256[]"
+                }
+            ],
+            "name": "send",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+        }
+    ]
+}
