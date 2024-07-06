@@ -25,7 +25,7 @@ The Crypto Transfer Tool is a web application that enables users to make multipl
 Ensure you have the following installed:
 
 - Node.js (v18 or later)
-- npm or yarn
+- npm
 - Foundry
 
 ### Installation
